@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StockAlertRepository extends JpaRepository<StockAlert, Long> {
 
@@ -26,4 +27,12 @@ public interface StockAlertRepository extends JpaRepository<StockAlert, Long> {
             ORDER BY sa.createdAt DESC
             """)
     List<StockAlert> findByStatusWithProductOrderByCreatedAtDesc(@Param("status") AlertStatus status);
+
+    @Query("""
+            SELECT sa
+            FROM StockAlert sa
+            JOIN FETCH sa.product
+            WHERE sa.id = :id
+            """)
+    Optional<StockAlert> findByIdWithProduct(@Param("id") Long id);
 }

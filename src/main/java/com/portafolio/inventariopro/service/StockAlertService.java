@@ -4,9 +4,11 @@ import com.portafolio.inventariopro.dto.StockAlertResponse;
 import com.portafolio.inventariopro.entity.StockAlert;
 import com.portafolio.inventariopro.enums.AlertStatus;
 import com.portafolio.inventariopro.repository.StockAlertRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -16,10 +18,23 @@ public class StockAlertService {
     private final StockAlertRepository stockAlertRepository;
 
     public List<StockAlertResponse> findPendingAlerts() {
-    return stockAlertRepository.findByStatusWithProductOrderByCreatedAtDesc(AlertStatus.PENDING)
-        .stream()
-        .map(this::toResponse)
-        .toList();
+        return stockAlertRepository.findByStatusWithProductOrderByCreatedAtDesc(AlertStatus.PENDING)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public StockAlertResponse resolveAlert(Long id) {
+        StockAlert alert = stockAlertRepository.findByIdWithProduct(id)
+                .orElseThrow(() -> new RuntimeException("Alerta no encontrada"));
+
+        alert.setStatus(AlertStatus.RESOLVED);
+        alert.setResolvedAt(LocalDateTime.now());
+
+        StockAlert updatedAlert = stockAlertRepository.save(alert);
+
+        return toResponse(updatedAlert);
     }
 
     private StockAlertResponse toResponse(StockAlert alert) {
