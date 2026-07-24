@@ -19,6 +19,11 @@ public class StockAlertController {
         return stockAlertService.findPendingAlerts();
     }
 
+    @PatchMapping("/{id}/notify")
+    public StockAlertResponse notifyAlert(@PathVariable Long id) {
+        return stockAlertService.notifyAlert(id);
+    }
+
     @PatchMapping("/{id}/resolve")
     public StockAlertResponse resolveAlert(@PathVariable Long id) {
         return stockAlertService.resolveAlert(id);

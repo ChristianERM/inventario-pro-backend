@@ -42,29 +42,29 @@ public class LowStockScheduler {
                     product.getMinimumStock()
             );
 
-            boolean alreadyExists = stockAlertRepository.existsByProductAndTypeAndStatus(
+            boolean hasActiveAlert = stockAlertRepository.existsByProductAndTypeAndStatusIn(
                     product,
                     AlertType.LOW_STOCK,
-                    AlertStatus.PENDING
+                    List.of(AlertStatus.PENDING, AlertStatus.NOTIFIED)
             );
 
-            if (alreadyExists) {
-                log.info("Ya existe una alerta pendiente para el producto: {}", product.getName());
+            if (hasActiveAlert) {
+                log.info("Ya existe una alerta activa para el producto: {}", product.getName());
                 continue;
             }
 
             StockAlert alert = StockAlert.builder()
+                    .product(product)
                     .type(AlertType.LOW_STOCK)
                     .status(AlertStatus.PENDING)
-                    .product(product)
+                    .message("Producto con bajo stock: " + product.getName())
                     .currentStock(product.getCurrentStock())
                     .minimumStock(product.getMinimumStock())
-                    .message("Producto con bajo stock: " + product.getName())
                     .build();
 
             stockAlertRepository.save(alert);
 
-            log.info("Alerta de bajo stock guardada para el producto: {}", product.getName());
+            log.warn("Nueva alerta de bajo stock guardada para el producto: {}", product.getName());
         }
     }
 }
